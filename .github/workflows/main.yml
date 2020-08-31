@@ -131,7 +131,17 @@ jobs:
             echo ::set-env name=TAGS::$(echo "$SCHEDULE_TAG")
           else
             # add all tags together into one comma-separated string
+
+
+
             newtags=$(echo -n "$SCHEDULE_TAG,$TAGS ${{steps.vars.outputs.version}}" | awk -v RS='[, ]' '!a[$0]++' | paste -sd,)
+
+            # if building a github release tag, don't push latest
+            reftype=$(echo $GITHUB_REF | awk -F'/' '{print $2}')
+            if [ "$reftype" == "tags" ]; then
+              newtags="${{steps.vars.outputs.version}}"
+            fi
+
             echo "Will build tags for: $newtags"
             echo ::set-env name=TAGS::$(echo "$newtags")
           fi
